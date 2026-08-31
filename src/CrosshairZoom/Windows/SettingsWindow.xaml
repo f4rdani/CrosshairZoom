@@ -1,0 +1,473 @@
+<Window x:Class="CrosshairZoom.Windows.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:CrosshairZoom.Controls"
+        Title="CrosshairZoom — Control Center" Height="650" Width="730"
+        Icon="pack://application:,,,/Assets/app_icon.ico"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize"
+        Background="#0D0E12" Foreground="#FFFFFF"
+        FontFamily="Segoe UI"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+    
+    <Window.Resources>
+        <SolidColorBrush x:Key="AccentGreen" Color="#00FF88"/>
+        <SolidColorBrush x:Key="AccentCyan" Color="#00E5FF"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#A0AEC0"/>
+
+        <!-- Sleek TabItem Style -->
+        <Style TargetType="TabItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="TabBorder" Background="#15171F" CornerRadius="6" Margin="0,0,6,0" Padding="16,9" Cursor="Hand" BorderBrush="#252834" BorderThickness="1">
+                            <ContentPresenter x:Name="TabContent" ContentSource="Header" VerticalAlignment="Center" HorizontalAlignment="Center" TextElement.Foreground="#9FAEC0" TextElement.FontWeight="SemiBold" TextElement.FontSize="13"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#1E2330"/>
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="#00FF88"/>
+                                <Setter TargetName="TabContent" Property="TextElement.Foreground" Value="#00FF88"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#252B3C"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern ComboBox Style -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="#161822"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="ItemBorder" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="4" Margin="2">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#00FF88"/>
+                                <Setter Property="Foreground" Value="#000000"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#00CC6A"/>
+                                <Setter Property="Foreground" Value="#000000"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#12141C"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#2B3040"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleButton" 
+                                          Background="{TemplateBinding Background}" 
+                                          BorderBrush="{TemplateBinding BorderBrush}" 
+                                          BorderThickness="{TemplateBinding BorderThickness}" 
+                                          Focusable="False" 
+                                          IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                                          ClickMode="Press">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="10,6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="18"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ContentPresenter Grid.Column="0" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                                <Path Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 0 0 L 4 4 L 8 0 Z" Fill="#00FF88"/>
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="10,6,26,6" VerticalAlignment="Center" HorizontalAlignment="Left" TextElement.Foreground="#FFFFFF" TextElement.FontSize="12"/>
+                            <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                <Grid x:Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="260" Margin="0,4,0,0">
+                                    <Border x:Name="DropDownBorder" Background="#161822" BorderBrush="#00FF88" BorderThickness="1" CornerRadius="6" Padding="4">
+                                        <ScrollViewer SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern Sleek Slider Style -->
+        <Style TargetType="Slider">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid VerticalAlignment="Center">
+                            <Track x:Name="PART_Track">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static Slider.DecreaseLarge}">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate>
+                                                <Border Background="#00FF88" Height="5" CornerRadius="2.5,0,0,2.5"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static Slider.IncreaseLarge}">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate>
+                                                <Border Background="#222736" Height="5" CornerRadius="0,2.5,2.5,0"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate>
+                                                <Border Background="#FFFFFF" BorderBrush="#00FF88" BorderThickness="2" Width="14" Height="14" CornerRadius="7" Cursor="Hand"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Clean CheckBox Style -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border x:Name="Box" Width="16" Height="16" CornerRadius="3" Background="#12141C" BorderBrush="#2D3240" BorderThickness="1.5" Margin="0,0,8,0" VerticalAlignment="Center">
+                                <Path x:Name="CheckMark" Data="M 3 7 L 6 10 L 12 3" Stroke="#00FF88" StrokeThickness="1.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="#00FF88"/>
+                                <Setter TargetName="Box" Property="Background" Value="#1A2624"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Header & Quick Buttons -->
+        <Border Grid.Row="0" Background="#15171F" CornerRadius="8" Padding="14,10" Margin="0,0,0,12" BorderBrush="#252834" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🎯 CrosshairZoom" FontSize="17" FontWeight="Bold" Foreground="#00FF88" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <Border Background="#14261C" BorderBrush="#00FF88" BorderThickness="1" CornerRadius="4" Padding="7,2" VerticalAlignment="Center">
+                        <TextBlock Text="● ACTIVE" FontSize="10" FontWeight="Bold" Foreground="#00FF88"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Quick Action Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="QuickCrosshairBtn" Content="✚ Crosshair (F1)" Background="#1E2330" Foreground="#00FF88" BorderBrush="#00FF88" BorderThickness="1" Padding="12,6" Margin="0,0,8,0" FontWeight="Bold" FontSize="11" Cursor="Hand" Click="QuickCrosshair_Click">
+                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                    </Button>
+                    <Button x:Name="QuickZoomBtn" Content="🔍 Zoom 2x (F2)" Background="#1E2330" Foreground="#00E5FF" BorderBrush="#00E5FF" BorderThickness="1" Padding="12,6" FontWeight="Bold" FontSize="11" Cursor="Hand" Click="QuickZoom_Click">
+                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
+            <!-- Crosshair Tab -->
+            <TabItem Header="🎯 Crosshair">
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="200"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: Full Essential Controls -->
+                    <Border Background="#15171F" CornerRadius="8" Padding="16,12" Margin="0,0,12,0" BorderBrush="#252834" BorderThickness="1">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="55"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Shape / Preset -->
+                                <TextBlock Text="Crosshair Style:" Grid.Row="0" Grid.Column="0" Foreground="#A0AEC0" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,4"/>
+                                <ComboBox x:Name="ShapeCombo" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,3" SelectionChanged="OnCrosshairSettingChanged">
+                                    <ComboBoxItem Content="Dot (Precision Point)"/>
+                                    <ComboBoxItem Content="Cross (Standard +)"/>
+                                    <ComboBoxItem Content="CircleDot (Circle + Point)"/>
+                                    <ComboBoxItem Content="Crosshair (Cross + Point)"/>
+                                    <ComboBoxItem Content="Custom PNG Image (Custom File)"/>
+                                </ComboBox>
+
+                                <!-- Custom PNG Row -->
+                                <TextBlock Text="Custom PNG:" Grid.Row="1" Grid.Column="0" Foreground="#00FF88" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,4"/>
+                                <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="CustomPathText" Text="No file chosen" IsReadOnly="True" Background="#10121A" Foreground="#8C98A9" BorderBrush="#2B3040" Padding="6,3" FontSize="11" VerticalContentAlignment="Center"/>
+                                    <Button Content="Browse..." Grid.Column="1" Background="#1E2330" Foreground="#00FF88" BorderBrush="#00FF88" BorderThickness="1" Padding="10,3" Margin="6,0,0,0" FontSize="11" FontWeight="SemiBold" Cursor="Hand" Click="BrowseImage_Click">
+                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style></Button.Resources>
+                                    </Button>
+                                    <Button Content="✕" Grid.Column="2" Background="#28161A" Foreground="#FF6666" BorderBrush="#552228" BorderThickness="1" Padding="8,3" Margin="4,0,0,0" FontSize="11" FontWeight="Bold" Cursor="Hand" Click="ClearImage_Click" ToolTip="Clear custom image and revert to vector shape">
+                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style></Button.Resources>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Quick Color Presets -->
+                                <TextBlock Text="Color Palette:" Grid.Row="2" Grid.Column="0" Foreground="#A0AEC0" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,4"/>
+                                <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,4">
+                                    <Button Width="22" Height="22" Background="#00FF00" BorderThickness="0" Margin="0,0,6,0" Cursor="Hand" Click="ColorPreset_Click" Tag="#00FF00" ToolTip="Neon Green">
+                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="11"/></Style></Button.Resources>
+                                    </Button>
+                                    <Button Width="22" Height="22" Background="#FF3333" BorderThickness="0" Margin="0,0,6,0" Cursor="Hand" Click="ColorPreset_Click" Tag="#FF3333" ToolTip="Bright Red">
+                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="11"/></Style></Button.Resources>
+                                    </Button>
+                                    <Button Width="22" Height="22" Background="#FFFF00" BorderThickness="0" Margin="0,0,6,0" Cursor="Hand" Click="ColorPreset_Click" Tag="#FFFF00" ToolTip="Cyber Yellow">
+                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="11"/></Style></Button.Resources>
+                                    </Button>
+                                    <Button Width="22" Height="22" Background="#00E5FF" BorderThickness="0" Margin="0,0,6,0" Cursor="Hand" Click="ColorPreset_Click" Tag="#00E5FF" ToolTip="Cyan Blue">
+                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="11"/></Style></Button.Resources>
+                                    </Button>
+                                    <Button Width="22" Height="22" Background="#FFFFFF" BorderThickness="0" Margin="0,0,8,0" Cursor="Hand" Click="ColorPreset_Click" Tag="#FFFFFF" ToolTip="Pure White">
+                                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="11"/></Style></Button.Resources>
+                                    </Button>
+                                    <TextBox x:Name="ColorText" Width="70" Height="24" Padding="4,1" FontSize="11" Text="#00FF00" Background="#10121A" Foreground="#00FF88" BorderBrush="#2B3040" TextChanged="OnCrosshairTextSettingChanged"/>
+                                </StackPanel>
+
+                                <!-- Size -->
+                                <TextBlock Text="Size (Diameter):" Grid.Row="3" Grid.Column="0" Foreground="#A0AEC0" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,4"/>
+                                <Slider x:Name="SizeSlider" Grid.Row="3" Grid.Column="1" Minimum="4" Maximum="120" ValueChanged="OnCrosshairSliderChanged"/>
+                                <TextBlock x:Name="SizeValueLabel" Text="20px" Grid.Row="3" Grid.Column="2" Foreground="#00FF88" FontWeight="Bold" FontSize="11" TextAlignment="Right" VerticalAlignment="Center"/>
+
+                                <!-- Thickness -->
+                                <TextBlock Text="Line Thickness:" Grid.Row="4" Grid.Column="0" Foreground="#A0AEC0" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,4"/>
+                                <Slider x:Name="ThicknessSlider" Grid.Row="4" Grid.Column="1" Minimum="1" Maximum="10" ValueChanged="OnCrosshairSliderChanged"/>
+                                <TextBlock x:Name="ThicknessValueLabel" Text="2px" Grid.Row="4" Grid.Column="2" Foreground="#00FF88" FontWeight="Bold" FontSize="11" TextAlignment="Right" VerticalAlignment="Center"/>
+
+                                <!-- Gap -->
+                                <TextBlock Text="Center Gap:" Grid.Row="5" Grid.Column="0" Foreground="#A0AEC0" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,4"/>
+                                <Slider x:Name="GapSlider" Grid.Row="5" Grid.Column="1" Minimum="0" Maximum="30" ValueChanged="OnCrosshairSliderChanged"/>
+                                <TextBlock x:Name="GapValueLabel" Text="4px" Grid.Row="5" Grid.Column="2" Foreground="#00FF88" FontWeight="Bold" FontSize="11" TextAlignment="Right" VerticalAlignment="Center"/>
+
+                                <!-- Shift X -->
+                                <TextBlock Text="Horizontal Shift (X):" Grid.Row="6" Grid.Column="0" Foreground="#00E5FF" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,4"/>
+                                <Slider x:Name="OffsetXSlider" Grid.Row="6" Grid.Column="1" Minimum="-300" Maximum="300" Value="0" ValueChanged="OnCrosshairSliderChanged"/>
+                                <TextBlock x:Name="OffsetXLabel" Text="0px" Grid.Row="6" Grid.Column="2" Foreground="#00E5FF" FontWeight="Bold" FontSize="11" TextAlignment="Right" VerticalAlignment="Center"/>
+
+                                <!-- Shift Y -->
+                                <TextBlock Text="Vertical Shift (Y):" Grid.Row="7" Grid.Column="0" Foreground="#00E5FF" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,4"/>
+                                <Slider x:Name="OffsetYSlider" Grid.Row="7" Grid.Column="1" Minimum="-300" Maximum="300" Value="0" ValueChanged="OnCrosshairSliderChanged"/>
+                                <TextBlock x:Name="OffsetYLabel" Text="0px" Grid.Row="7" Grid.Column="2" Foreground="#00E5FF" FontWeight="Bold" FontSize="11" TextAlignment="Right" VerticalAlignment="Center"/>
+
+                                <!-- Outline Checkbox & Reset Button -->
+                                <CheckBox x:Name="OutlineCheck" Content="High-Contrast Black Outline" Grid.Row="8" Grid.Column="1" Margin="0,6,0,0" Checked="OnCrosshairCheckChanged" Unchecked="OnCrosshairCheckChanged"/>
+                                <Button Content="⟲ Reset Center" Grid.Row="8" Grid.Column="2" Background="#1E2330" Foreground="#00E5FF" BorderBrush="#00E5FF" BorderThickness="1" Padding="4,3" FontSize="10" FontWeight="SemiBold" Cursor="Hand" Click="ResetOffset_Click">
+                                    <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style></Button.Resources>
+                                </Button>
+                            </Grid>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Right: Clean Live Preview Card -->
+                    <Border Grid.Column="1" Background="#15171F" BorderBrush="#252834" BorderThickness="1" CornerRadius="8" Padding="12">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Text="REALTIME PREVIEW" FontSize="11" FontWeight="Bold" Foreground="#00FF88" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                            
+                            <Border Grid.Row="1" Background="#0A0B0E" BorderBrush="#252834" BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+                                <Grid RenderOptions.BitmapScalingMode="HighQuality">
+                                    <Line X1="0" Y1="100" X2="200" Y2="100" Stroke="#181B24" StrokeThickness="1"/>
+                                    <Line X1="100" Y1="0" X2="100" Y2="200" Stroke="#181B24" StrokeThickness="1"/>
+                                    <controls:CrosshairCanvas x:Name="PreviewCrosshair" HorizontalAlignment="Center" VerticalAlignment="Center" Width="160" Height="160"/>
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Grid.Row="2" Text="Changes apply live in-game instantly." FontSize="10" Foreground="#8C98A9" TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,0"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Digital Zoom Tab -->
+            <TabItem Header="🔍 Digital Zoom (2x)">
+                <Border Background="#15171F" CornerRadius="8" Padding="18,14" Margin="0,8,0,0" BorderBrush="#252834" BorderThickness="1">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="60"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Shape -->
+                            <TextBlock Text="Magnifier Lens Shape:" Grid.Row="0" Grid.Column="0" Foreground="#A0AEC0" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,6"/>
+                            <ComboBox x:Name="LensShapeCombo" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,4" SelectionChanged="LensShapeCombo_SelectionChanged">
+                                <ComboBoxItem Content="Wide Rectangle (Widescreen 650x450)"/>
+                                <ComboBoxItem Content="Large Square (Square 550x550)"/>
+                                <ComboBoxItem Content="Circular Lens (Circle 550px)"/>
+                            </ComboBox>
+
+                            <!-- Width -->
+                            <TextBlock Text="Lens Width:" Grid.Row="1" Grid.Column="0" Foreground="#A0AEC0" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,6"/>
+                            <Slider x:Name="LensWidthSlider" Grid.Row="1" Grid.Column="1" Minimum="250" Maximum="1100" Value="650" ValueChanged="LensWidthSlider_ValueChanged"/>
+                            <TextBlock x:Name="LensWidthLabel" Text="650px" Grid.Row="1" Grid.Column="2" Foreground="#00FF88" FontWeight="Bold" FontSize="11" TextAlignment="Right" VerticalAlignment="Center"/>
+
+                            <!-- Height -->
+                            <TextBlock Text="Lens Height:" Grid.Row="2" Grid.Column="0" Foreground="#A0AEC0" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,6"/>
+                            <Slider x:Name="LensHeightSlider" Grid.Row="2" Grid.Column="1" Minimum="200" Maximum="900" Value="450" ValueChanged="LensHeightSlider_ValueChanged"/>
+                            <TextBlock x:Name="LensHeightLabel" Text="450px" Grid.Row="2" Grid.Column="2" Foreground="#00FF88" FontWeight="Bold" FontSize="11" TextAlignment="Right" VerticalAlignment="Center"/>
+
+                            <!-- Position Sync -->
+                            <TextBlock Text="Position Tracking:" Grid.Row="3" Grid.Column="0" Foreground="#00E5FF" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,6"/>
+                            <CheckBox x:Name="SyncPositionCheck" Content="Auto-Center Lens on Crosshair Position (Recommended)" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" IsChecked="True" Margin="0,6" Checked="OnZoomSettingChanged" Unchecked="OnZoomSettingChanged"/>
+
+                            <!-- Info -->
+                            <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Background="#14261C" BorderBrush="#00FF88" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,14,0,0">
+                                <TextBlock Text="💡 Press F2 in-game anytime to toggle the 2x hardware-accelerated screen magnifier." Foreground="#D0E0F0" FontSize="11" TextWrapping="Wrap"/>
+                            </Border>
+                        </Grid>
+                    </ScrollViewer>
+                </Border>
+            </TabItem>
+
+            <!-- Shortcuts Tab -->
+            <TabItem Header="⌨️ Hotkeys">
+                <Border Background="#15171F" CornerRadius="8" Padding="18,14" Margin="0,8,0,0" BorderBrush="#252834" BorderThickness="1">
+                    <StackPanel>
+                        <Grid Margin="0,6">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <Border Background="#1E2330" BorderBrush="#00FF88" BorderThickness="1" CornerRadius="4" Padding="8,3" HorizontalAlignment="Left">
+                                <TextBlock Text="F1" FontWeight="Bold" Foreground="#00FF88" FontFamily="Consolas" FontSize="12"/>
+                            </Border>
+                            <TextBlock Text="Toggle Crosshair Overlay (Show / Hide)" Grid.Column="1" VerticalAlignment="Center" Foreground="#FFFFFF" FontSize="12"/>
+                        </Grid>
+
+                        <Grid Margin="0,6">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <Border Background="#1E2330" BorderBrush="#00E5FF" BorderThickness="1" CornerRadius="4" Padding="8,3" HorizontalAlignment="Left">
+                                <TextBlock Text="F2" FontWeight="Bold" Foreground="#00E5FF" FontFamily="Consolas" FontSize="12"/>
+                            </Border>
+                            <TextBlock Text="Toggle 2x Screen Magnifier Lens (Show / Hide)" Grid.Column="1" VerticalAlignment="Center" Foreground="#FFFFFF" FontSize="12"/>
+                        </Grid>
+
+                        <Grid Margin="0,6">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <Border Background="#1E2330" BorderBrush="#FFCC00" BorderThickness="1" CornerRadius="4" Padding="8,3" HorizontalAlignment="Left">
+                                <TextBlock Text="F4" FontWeight="Bold" Foreground="#FFCC00" FontFamily="Consolas" FontSize="12"/>
+                            </Border>
+                            <TextBlock Text="Quick Cycle Next Crosshair Style Preset" Grid.Column="1" VerticalAlignment="Center" Foreground="#FFFFFF" FontSize="12"/>
+                        </Grid>
+
+                        <Grid Margin="0,6">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <Border Background="#1E2330" BorderBrush="#FF5555" BorderThickness="1" CornerRadius="4" Padding="8,3" HorizontalAlignment="Left">
+                                <TextBlock Text="Ctrl + Shift + Q" FontWeight="Bold" Foreground="#FF5555" FontFamily="Consolas" FontSize="12"/>
+                            </Border>
+                            <TextBlock Text="Exit &amp; Close CrosshairZoom Completely" Grid.Column="1" VerticalAlignment="Center" Foreground="#FFFFFF" FontSize="12"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </TabItem>
+        </TabControl>
+
+        <!-- Bottom Bar -->
+        <Grid Grid.Row="2" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="⚡ All changes are saved automatically in real-time" FontSize="11" Foreground="#00FF88" VerticalAlignment="Center"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="Exit App" Background="#281418" Foreground="#FF5555" BorderBrush="#552228" BorderThickness="1" Padding="14,6" FontWeight="SemiBold" FontSize="11" Margin="0,0,8,0" Cursor="Hand" Click="ExitAppButton_Click">
+                    <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                </Button>
+                <Button Content="Hide to Tray" Background="#1E2330" Foreground="#FFFFFF" BorderBrush="#333846" BorderThickness="1" Padding="14,6" FontWeight="SemiBold" FontSize="11" Cursor="Hand" Click="MinimizeToBackground_Click">
+                    <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="5"/></Style></Button.Resources>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

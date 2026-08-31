@@ -1,0 +1,20 @@
+<Window x:Class="CrosshairZoom.Windows.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:CrosshairZoom.Controls"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        WindowState="Maximized"
+        ResizeMode="NoResize"
+        IsHitTestVisible="False">
+    <Grid IsHitTestVisible="False">
+        <!-- Full-screen stretch canvas prevents any crosshair clipping regardless of size or gap -->
+        <controls:CrosshairCanvas x:Name="Crosshair" 
+                                   HorizontalAlignment="Stretch" 
+                                   VerticalAlignment="Stretch"
+                                   IsHitTestVisible="False"/>
+    </Grid>
+</Window>
