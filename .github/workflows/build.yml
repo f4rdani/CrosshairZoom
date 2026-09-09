@@ -39,8 +39,7 @@ jobs:
 
       - name: Package Zip Archive
         shell: pwsh
-        run: |
-          Compress-Archive -Path output/CrosshairZoom-win-x64/* -DestinationPath output/CrosshairZoom-win-x64.zip
+        run: Compress-Archive -Path output/CrosshairZoom-win-x64 -DestinationPath output/CrosshairZoom-win-x64.zip -Force
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
