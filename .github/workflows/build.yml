@@ -31,23 +31,9 @@ jobs:
           dotnet build src\CrosshairZoom\CrosshairZoom.csproj -c Release -v normal > build.log 2>&1
           type build.log
 
-      - name: Upload Build Log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-diagnostic-log
-          path: build.log
-
-      - name: Publish Single-File Executable
-        shell: pwsh
-        run: |
-          dotnet publish src/CrosshairZoom/CrosshairZoom.csproj `
-            -c Release `
-            -r win-x64 `
-            --self-contained false `
-            -p:PublishSingleFile=true `
-            -p:IncludeNativeLibrariesForSelfExtract=true `
-            -o output/CrosshairZoom-win-x64
+      - name: Publish Executable
+        shell: cmd
+        run: dotnet publish src\CrosshairZoom\CrosshairZoom.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o output\CrosshairZoom-win-x64
 
       - name: Package Zip Archive
         shell: pwsh
