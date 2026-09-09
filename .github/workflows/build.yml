@@ -38,16 +38,14 @@ jobs:
           type publish.log
 
       - name: Package Zip Archive
-        shell: pwsh
-        run: Compress-Archive -Path output/CrosshairZoom-win-x64 -DestinationPath output/CrosshairZoom-win-x64.zip -Force
+        shell: cmd
+        run: tar.exe -a -c -f output\CrosshairZoom-win-x64.zip -C output CrosshairZoom-win-x64
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: CrosshairZoom-win-x64
-          path: |
-            output/CrosshairZoom-win-x64.zip
-            output/CrosshairZoom-win-x64/CrosshairZoom.exe
+          path: output/CrosshairZoom-win-x64/
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
