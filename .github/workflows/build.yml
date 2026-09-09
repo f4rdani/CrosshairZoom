@@ -37,10 +37,6 @@ jobs:
           dotnet publish src\CrosshairZoom\CrosshairZoom.csproj -c Release -r win-x64 --self-contained false -o output\CrosshairZoom-win-x64 > publish.log 2>&1
           type publish.log
 
-      - name: Package Zip Archive
-        shell: cmd
-        run: tar.exe -a -c -f output\CrosshairZoom-win-x64.zip -C output CrosshairZoom-win-x64
-
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -51,9 +47,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            output/CrosshairZoom-win-x64.zip
-            output/CrosshairZoom-win-x64/CrosshairZoom.exe
+          files: output/CrosshairZoom-win-x64/*
           draft: false
           prerelease: false
           generate_release_notes: true
