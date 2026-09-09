@@ -26,18 +26,17 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build Project (Release)
-        shell: pwsh
+        shell: cmd
         run: |
-          $buildOutput = dotnet build src/CrosshairZoom/CrosshairZoom.csproj -c Release 2>&1
-          $buildOutput | ForEach-Object { Write-Host $_ }
-          "### 📋 Build Output" >> $env:GITHUB_STEP_SUMMARY
-          "```text" >> $env:GITHUB_STEP_SUMMARY
-          $buildOutput | Out-String >> $env:GITHUB_STEP_SUMMARY
-          "```" >> $env:GITHUB_STEP_SUMMARY
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "Build failed with exit code $LASTEXITCODE"
-            exit 1
-          }
+          dotnet build src\CrosshairZoom\CrosshairZoom.csproj -c Release -v normal > build.log 2>&1
+          type build.log
+
+      - name: Upload Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-diagnostic-log
+          path: build.log
 
       - name: Publish Single-File Executable
         shell: pwsh
