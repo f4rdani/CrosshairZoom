@@ -4,6 +4,7 @@
 
 [![.NET 8.0](https://img.shields.io/badge/.NET-8.0--windows-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011-0078D6?logo=windows)](https://microsoft.com/windows)
+[![Build](https://github.com/f4rdani/CrosshairZoom/actions/workflows/build.yml/badge.svg)](https://github.com/f4rdani/CrosshairZoom/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
@@ -24,22 +25,27 @@
   - Shift your crosshair and zoom lens horizontally (X) and vertically (Y) by -300px to +300px to perfectly align with off-center ADS camera perspectives (e.g. third-person shooters or custom gun sights).
   - Quick **⟲ Reset Center (0,0)** button.
 
-- ⚡ **Realtime Instant Auto-Save**:
-  - Every slider tweak and dropdown selection is immediately saved to `%AppData%/CrosshairZoom/settings.json` and rendered live in-game without manual save buttons.
+- ⌨️ **Fully Customizable Global Hotkeys**:
+  - Rebind and customize any action directly from the **⌨️ Hotkeys** tab in the Control Center (e.g., set F2 for Crosshair, or any desired key).
+  - Supports single keys (`F1`–`F12`, alphanumeric, `~`, `Space`, etc.) and modifier combinations (`Ctrl`, `Alt`, `Shift`, `Win`).
+  - Automatic duplicate key conflict resolution and instant **⟲ Reset All Defaults** option.
+  - Non-intrusive low-level keyboard hooks (`WH_KEYBOARD_LL`) that work across borderless and windowed games without stealing window focus.
 
-- ⌨️ **Global Low-Level Hotkeys**:
-  - Non-intrusive keyboard hooks (`WH_KEYBOARD_LL`) that work across borderless and windowed games without stealing window focus.
+- ⚡ **Realtime Instant Auto-Save**:
+  - Every slider tweak, hotkey rebind, and dropdown selection is immediately saved to `%AppData%/CrosshairZoom/settings.json` and rendered live in-game without manual save buttons.
 
 ---
 
 ## ⌨️ Default Hotkeys
 
-| Hotkey | Action |
-|---|---|
-| **`F1`** | Toggle Crosshair Overlay (Show / Hide) |
-| **`F2`** | Toggle 2x Digital Screen Magnifier (Show / Hide) |
-| **`F4`** | Cycle Next Crosshair Style Preset |
-| **`Ctrl + Shift + Q`** | Exit & Close Application Completely |
+> **Note**: All hotkeys can be rebound and customized in real-time in the **Control Center → ⌨️ Hotkeys** tab.
+
+| Action | Default Hotkey | Customizable |
+|---|---|---|
+| **Toggle Crosshair Overlay** | `F1` | ✅ Yes (e.g. F2, X, CapsLock) |
+| **Toggle 2x Screen Magnifier Lens** | `F2` | ✅ Yes |
+| **Cycle Crosshair Style Preset** | `F4` | ✅ Yes |
+| **Exit CrosshairZoom Completely** | `Ctrl + Shift + Q` | ✅ Yes |
 
 ---
 
@@ -52,7 +58,7 @@
 ### Building from Source
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/CrosshairZoom.git
+git clone https://github.com/f4rdani/CrosshairZoom.git
 
 # Navigate to project directory
 cd CrosshairZoom

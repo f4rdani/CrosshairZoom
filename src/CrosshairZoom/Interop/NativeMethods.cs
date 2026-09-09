@@ -191,4 +191,14 @@ public static class NativeMethods
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern bool DestroyWindow(IntPtr hWnd);
+
+    public const int VK_SHIFT = 0x10;
+    public const int VK_CONTROL = 0x11;
+    public const int VK_MENU = 0x12;        // Alt key
+    public const int VK_LWIN = 0x5B;        // Left Windows key
+    public const int VK_RWIN = 0x5C;        // Right Windows key
+    public const int VK_CAPITAL = 0x14;     // Caps Lock
+
+    [DllImport("user32.dll")]
+    public static extern short GetAsyncKeyState(int vKey);
 }

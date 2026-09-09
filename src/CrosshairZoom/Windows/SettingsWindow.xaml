@@ -10,13 +10,43 @@
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
         UseLayoutRounding="True"
-        SnapsToDevicePixels="True">
+        SnapsToDevicePixels="True"
+        PreviewKeyDown="Window_PreviewKeyDown">
     
     <Window.Resources>
         <SolidColorBrush x:Key="AccentGreen" Color="#00FF88"/>
         <SolidColorBrush x:Key="AccentCyan" Color="#00E5FF"/>
         <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="TextSecondary" Color="#A0AEC0"/>
+
+        <!-- Hotkey Key Chip Button Style -->
+        <Style x:Key="HotkeyKeyButton" TargetType="Button">
+            <Setter Property="Background" Value="#181B26"/>
+            <Setter Property="Foreground" Value="#00FF88"/>
+            <Setter Property="BorderBrush" Value="#2F364A"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="FontFamily" Value="Consolas, Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BtnBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BtnBorder" Property="Background" Value="#22283A"/>
+                                <Setter TargetName="BtnBorder" Property="BorderBrush" Value="#00FF88"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <!-- Sleek TabItem Style -->
         <Style TargetType="TabItem">
@@ -404,7 +434,7 @@
 
                             <!-- Info -->
                             <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Background="#14261C" BorderBrush="#00FF88" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,14,0,0">
-                                <TextBlock Text="💡 Press F2 in-game anytime to toggle the 2x hardware-accelerated screen magnifier." Foreground="#D0E0F0" FontSize="11" TextWrapping="Wrap"/>
+                                <TextBlock x:Name="ZoomHintText" Text="💡 Press F2 in-game anytime to toggle the 2x hardware-accelerated screen magnifier." Foreground="#D0E0F0" FontSize="11" TextWrapping="Wrap"/>
                             </Border>
                         </Grid>
                     </ScrollViewer>
@@ -414,39 +444,81 @@
             <!-- Shortcuts Tab -->
             <TabItem Header="⌨️ Hotkeys">
                 <Border Background="#15171F" CornerRadius="8" Padding="18,14" Margin="0,8,0,0" BorderBrush="#252834" BorderThickness="1">
-                    <StackPanel>
-                        <Grid Margin="0,6">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                            <Border Background="#1E2330" BorderBrush="#00FF88" BorderThickness="1" CornerRadius="4" Padding="8,3" HorizontalAlignment="Left">
-                                <TextBlock Text="F1" FontWeight="Bold" Foreground="#00FF88" FontFamily="Consolas" FontSize="12"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!-- Row 1: Crosshair Toggle -->
+                            <Border Background="#10121A" BorderBrush="#242838" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,0,0,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="🎯 Toggle Crosshair Overlay" Foreground="#00FF88" FontWeight="SemiBold" FontSize="13"/>
+                                        <TextBlock Text="Show or hide your center crosshair overlay in-game" Foreground="#8C98A9" FontSize="11" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <Button x:Name="BtnHotkeyCrosshair" Grid.Column="1" Content="F1" Style="{StaticResource HotkeyKeyButton}" Click="OnHotkeyButtonClick" Tag="ToggleCrosshair" ToolTip="Click to rebind this hotkey"/>
+                                </Grid>
                             </Border>
-                            <TextBlock Text="Toggle Crosshair Overlay (Show / Hide)" Grid.Column="1" VerticalAlignment="Center" Foreground="#FFFFFF" FontSize="12"/>
-                        </Grid>
 
-                        <Grid Margin="0,6">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                            <Border Background="#1E2330" BorderBrush="#00E5FF" BorderThickness="1" CornerRadius="4" Padding="8,3" HorizontalAlignment="Left">
-                                <TextBlock Text="F2" FontWeight="Bold" Foreground="#00E5FF" FontFamily="Consolas" FontSize="12"/>
+                            <!-- Row 2: Zoom Toggle -->
+                            <Border Background="#10121A" BorderBrush="#242838" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,0,0,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="🔍 Toggle 2x Digital Zoom Lens" Foreground="#00E5FF" FontWeight="SemiBold" FontSize="13"/>
+                                        <TextBlock Text="Show or hide the hardware-accelerated screen magnifier" Foreground="#8C98A9" FontSize="11" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <Button x:Name="BtnHotkeyZoom" Grid.Column="1" Content="F2" Style="{StaticResource HotkeyKeyButton}" Click="OnHotkeyButtonClick" Tag="ToggleZoom" ToolTip="Click to rebind this hotkey"/>
+                                </Grid>
                             </Border>
-                            <TextBlock Text="Toggle 2x Screen Magnifier Lens (Show / Hide)" Grid.Column="1" VerticalAlignment="Center" Foreground="#FFFFFF" FontSize="12"/>
-                        </Grid>
 
-                        <Grid Margin="0,6">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                            <Border Background="#1E2330" BorderBrush="#FFCC00" BorderThickness="1" CornerRadius="4" Padding="8,3" HorizontalAlignment="Left">
-                                <TextBlock Text="F4" FontWeight="Bold" Foreground="#FFCC00" FontFamily="Consolas" FontSize="12"/>
+                            <!-- Row 3: Next Crosshair Preset -->
+                            <Border Background="#10121A" BorderBrush="#242838" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,0,0,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="🔄 Cycle Crosshair Preset" Foreground="#FFCC00" FontWeight="SemiBold" FontSize="13"/>
+                                        <TextBlock Text="Cycle quickly between Dot, Cross, CircleDot, and Crosshair presets" Foreground="#8C98A9" FontSize="11" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <Button x:Name="BtnHotkeyPreset" Grid.Column="1" Content="F4" Style="{StaticResource HotkeyKeyButton}" Click="OnHotkeyButtonClick" Tag="NextCrosshair" ToolTip="Click to rebind this hotkey"/>
+                                </Grid>
                             </Border>
-                            <TextBlock Text="Quick Cycle Next Crosshair Style Preset" Grid.Column="1" VerticalAlignment="Center" Foreground="#FFFFFF" FontSize="12"/>
-                        </Grid>
 
-                        <Grid Margin="0,6">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                            <Border Background="#1E2330" BorderBrush="#FF5555" BorderThickness="1" CornerRadius="4" Padding="8,3" HorizontalAlignment="Left">
-                                <TextBlock Text="Ctrl + Shift + Q" FontWeight="Bold" Foreground="#FF5555" FontFamily="Consolas" FontSize="12"/>
+                            <!-- Row 4: Exit Application -->
+                            <Border Background="#10121A" BorderBrush="#242838" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,0,0,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="❌ Exit CrosshairZoom" Foreground="#FF5555" FontWeight="SemiBold" FontSize="13"/>
+                                        <TextBlock Text="Completely close and exit CrosshairZoom from memory" Foreground="#8C98A9" FontSize="11" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <Button x:Name="BtnHotkeyExit" Grid.Column="1" Content="Ctrl + Shift + Q" Style="{StaticResource HotkeyKeyButton}" Click="OnHotkeyButtonClick" Tag="ExitApp" ToolTip="Click to rebind this hotkey"/>
+                                </Grid>
                             </Border>
-                            <TextBlock Text="Exit &amp; Close CrosshairZoom Completely" Grid.Column="1" VerticalAlignment="Center" Foreground="#FFFFFF" FontSize="12"/>
-                        </Grid>
-                    </StackPanel>
+
+                            <!-- Bottom bar in Hotkeys tab -->
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="HotkeyStatusText" Text="💡 Click any button above, then press your desired key or combination. Press Esc to cancel." Foreground="#8C98A9" FontSize="11" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                <Button Content="⟲ Reset All Defaults" Grid.Column="1" Background="#1E2330" Foreground="#00E5FF" BorderBrush="#00E5FF" BorderThickness="1" Padding="12,5" FontSize="11" FontWeight="SemiBold" Cursor="Hand" Click="ResetHotkeys_Click" Margin="10,0,0,0">
+                                    <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="4"/></Style></Button.Resources>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
                 </Border>
             </TabItem>
         </TabControl>

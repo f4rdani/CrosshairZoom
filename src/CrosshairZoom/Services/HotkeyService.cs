@@ -16,6 +16,8 @@ namespace CrosshairZoom.Services
 
         public event Action<string>? HotkeyPressed;
 
+        private readonly Dictionary<string, HotkeyBinding> _bindings = new();
+
         public HotkeyService()
         {
             _proc = HookCallback;
@@ -24,7 +26,20 @@ namespace CrosshairZoom.Services
 
         public void RegisterAll(AppSettings settings)
         {
-            // Settings can be used for custom bindings if configured
+            lock (_bindings)
+            {
+                _bindings.Clear();
+                if (settings.Hotkeys != null)
+                {
+                    foreach (var (action, binding) in settings.Hotkeys)
+                    {
+                        if (binding != null && binding.Key > 0)
+                        {
+                            _bindings[action] = new HotkeyBinding(binding.ModifierKeys, binding.Key);
+                        }
+                    }
+                }
+            }
         }
 
         private IntPtr SetHook(NativeMethods.LowLevelKeyboardProc proc)
@@ -40,44 +55,41 @@ namespace CrosshairZoom.Services
             if (nCode >= 0 && (wParam == (IntPtr)NativeMethods.WM_KEYDOWN || wParam == (IntPtr)NativeMethods.WM_SYSKEYDOWN))
             {
                 int vkCode = Marshal.ReadInt32(lParam);
-                bool ctrl = (Keyboard.Modifiers & ModifierKeys.Control) != 0;
-                bool shift = (Keyboard.Modifiers & ModifierKeys.Shift) != 0;
-                bool alt = (Keyboard.Modifiers & ModifierKeys.Alt) != 0;
 
-                string? action = null;
+                // Ignore pure modifier presses
+                if (vkCode != NativeMethods.VK_CONTROL &&
+                    vkCode != NativeMethods.VK_SHIFT &&
+                    vkCode != NativeMethods.VK_MENU &&
+                    vkCode != NativeMethods.VK_LWIN &&
+                    vkCode != NativeMethods.VK_RWIN)
+                {
+                    int currentModifiers = 0;
+                    if ((NativeMethods.GetAsyncKeyState(NativeMethods.VK_MENU) & 0x8000) != 0) currentModifiers |= 1;    // Alt
+                    if ((NativeMethods.GetAsyncKeyState(NativeMethods.VK_CONTROL) & 0x8000) != 0) currentModifiers |= 2; // Ctrl
+                    if ((NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT) & 0x8000) != 0) currentModifiers |= 4;   // Shift
+                    if ((NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) & 0x8000) != 0 || 
+                        (NativeMethods.GetAsyncKeyState(NativeMethods.VK_RWIN) & 0x8000) != 0) currentModifiers |= 8;   // Win
 
-                // F1: Toggle Crosshair (VK_F1 = 0x70 = 112)
-                if (vkCode == 0x70 && !ctrl && !alt && !shift)
-                {
-                    action = "ToggleCrosshair";
-                }
-                // F2: Toggle Zoom (VK_F2 = 0x71 = 113)
-                else if (vkCode == 0x71 && !ctrl && !alt && !shift)
-                {
-                    action = "ToggleZoom";
-                }
-                // F3: Cycle Zoom (VK_F3 = 0x72 = 114)
-                else if (vkCode == 0x72 && !ctrl && !alt && !shift)
-                {
-                    action = "CycleZoomLevel";
-                }
-                // F4: Next Crosshair Preset (VK_F4 = 0x73 = 115)
-                else if (vkCode == 0x73 && !ctrl && !alt && !shift)
-                {
-                    action = "NextCrosshair";
-                }
-                // Ctrl + Shift + Q: Exit
-                else if (vkCode == 0x51 && ctrl && shift)
-                {
-                    action = "ExitApp";
-                }
-
-                if (action != null)
-                {
-                    Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+                    string? action = null;
+                    lock (_bindings)
                     {
-                        HotkeyPressed?.Invoke(action);
-                    }));
+                        foreach (var (actionName, binding) in _bindings)
+                        {
+                            if (binding.Key == vkCode && binding.ModifierKeys == currentModifiers)
+                            {
+                                action = actionName;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (action != null)
+                    {
+                        Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            HotkeyPressed?.Invoke(action);
+                        }));
+                    }
                 }
             }
 

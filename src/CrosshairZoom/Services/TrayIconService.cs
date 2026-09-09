@@ -59,6 +59,15 @@ namespace CrosshairZoom.Services
             _isAdded = NativeMethods.Shell_NotifyIcon(NativeMethods.NIM_ADD, ref _nid);
         }
 
+        public void UpdateTooltip(string tooltip)
+        {
+            if (!_isAdded) return;
+            if (tooltip.Length > 127) tooltip = tooltip.Substring(0, 127);
+            _nid.szTip = tooltip;
+            _nid.uFlags = NativeMethods.NIF_TIP;
+            NativeMethods.Shell_NotifyIcon(NativeMethods.NIM_MODIFY, ref _nid);
+        }
+
         private static IntPtr LoadUnifiedIconHandle()
         {
             try

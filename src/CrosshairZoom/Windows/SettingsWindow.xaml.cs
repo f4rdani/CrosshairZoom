@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using Microsoft.Win32;
 using CrosshairZoom.Controls;
 using CrosshairZoom.Models;
@@ -14,6 +16,11 @@ namespace CrosshairZoom.Windows
         private AppSettings _currentSettings = new();
         private bool _isInitializing = true;
         public bool IsAppExiting { get; set; } = false;
+
+        private string? _recordingAction;
+        private Button? _recordingButton;
+        private Brush? _originalButtonBorder;
+        private Brush? _originalButtonBackground;
 
         public event Action? ToggleCrosshairRequested;
         public event Action? ToggleZoomRequested;
@@ -90,7 +97,181 @@ namespace CrosshairZoom.Windows
                 if (LensHeightLabel != null) LensHeightLabel.Text = $"{h}px";
             }
 
+            UpdateHotkeyUI();
+
             _isInitializing = false;
+        }
+
+        public void UpdateHotkeyUI()
+        {
+            _currentSettings.EnsureDefaultHotkeys();
+
+            if (BtnHotkeyCrosshair != null && _currentSettings.Hotkeys.TryGetValue("ToggleCrosshair", out var chk))
+            {
+                string txt = chk.ToDisplayString();
+                BtnHotkeyCrosshair.Content = txt;
+                if (QuickCrosshairBtn != null) QuickCrosshairBtn.Content = $"✚ Crosshair ({txt})";
+            }
+
+            if (BtnHotkeyZoom != null && _currentSettings.Hotkeys.TryGetValue("ToggleZoom", out var zmk))
+            {
+                string txt = zmk.ToDisplayString();
+                BtnHotkeyZoom.Content = txt;
+                if (QuickZoomBtn != null) QuickZoomBtn.Content = $"🔍 Zoom 2x ({txt})";
+                if (ZoomHintText != null) ZoomHintText.Text = $"💡 Press {txt} in-game anytime to toggle the 2x hardware-accelerated screen magnifier.";
+            }
+
+            if (BtnHotkeyPreset != null && _currentSettings.Hotkeys.TryGetValue("NextCrosshair", out var prk))
+            {
+                BtnHotkeyPreset.Content = prk.ToDisplayString();
+            }
+
+            if (BtnHotkeyExit != null && _currentSettings.Hotkeys.TryGetValue("ExitApp", out var exk))
+            {
+                BtnHotkeyExit.Content = exk.ToDisplayString();
+            }
+        }
+
+        private void OnHotkeyButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not string action) return;
+
+            if (_recordingAction != null)
+            {
+                CancelHotkeyRecording();
+            }
+
+            _recordingAction = action;
+            _recordingButton = btn;
+            _originalButtonBorder = btn.BorderBrush;
+            _originalButtonBackground = btn.Background;
+
+            btn.BorderBrush = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88));
+            btn.Background = new SolidColorBrush(Color.FromRgb(0x22, 0x38, 0x2E));
+            btn.Content = "Press key...";
+
+            if (HotkeyStatusText != null)
+            {
+                HotkeyStatusText.Text = $"⏺ Listening: Press any key/combination for '{GetActionTitle(action)}'... (Esc to cancel)";
+                HotkeyStatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88));
+            }
+        }
+
+        private static string GetActionTitle(string action) => action switch
+        {
+            "ToggleCrosshair" => "Toggle Crosshair Overlay",
+            "ToggleZoom" => "Toggle Digital Zoom",
+            "NextCrosshair" => "Cycle Crosshair Preset",
+            "ExitApp" => "Exit Application",
+            _ => action
+        };
+
+        private void CancelHotkeyRecording()
+        {
+            if (_recordingButton != null)
+            {
+                if (_originalButtonBorder != null) _recordingButton.BorderBrush = _originalButtonBorder;
+                if (_originalButtonBackground != null) _recordingButton.Background = _originalButtonBackground;
+            }
+            _recordingAction = null;
+            _recordingButton = null;
+
+            if (HotkeyStatusText != null)
+            {
+                HotkeyStatusText.Text = "💡 Click any button above, then press your desired key or combination. Press Esc to cancel.";
+                HotkeyStatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x8C, 0x98, 0xA9));
+            }
+
+            UpdateHotkeyUI();
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (_recordingAction == null || _recordingButton == null) return;
+
+            e.Handled = true;
+
+            Key key = (e.Key == Key.System) ? e.SystemKey : e.Key;
+
+            if (key == Key.Escape)
+            {
+                CancelHotkeyRecording();
+                return;
+            }
+
+            // Ignore pure modifier presses
+            if (key == Key.LeftCtrl || key == Key.RightCtrl ||
+                key == Key.LeftAlt || key == Key.RightAlt ||
+                key == Key.LeftShift || key == Key.RightShift ||
+                key == Key.LWin || key == Key.RWin)
+            {
+                return;
+            }
+
+            int vk = KeyInterop.VirtualKeyFromKey(key);
+            int modifiers = 0;
+            if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt)) modifiers |= 1;
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) modifiers |= 2;
+            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)) modifiers |= 4;
+            if (Keyboard.IsKeyDown(Key.LWin) || Keyboard.IsKeyDown(Key.RWin)) modifiers |= 8;
+
+            _currentSettings.EnsureDefaultHotkeys();
+
+            // Check for duplicate assignments
+            string? conflictAction = null;
+            foreach (var (act, b) in _currentSettings.Hotkeys)
+            {
+                if (act != _recordingAction && b != null && b.Key == vk && b.ModifierKeys == modifiers)
+                {
+                    conflictAction = act;
+                    break;
+                }
+            }
+
+            string actionName = _recordingAction;
+            _currentSettings.Hotkeys[actionName] = new HotkeyBinding(modifiers, vk);
+
+            if (conflictAction != null)
+            {
+                _currentSettings.Hotkeys[conflictAction] = new HotkeyBinding(0, 0);
+            }
+
+            CancelHotkeyRecording();
+            UpdateHotkeyUI();
+
+            if (HotkeyStatusText != null)
+            {
+                var display = _currentSettings.Hotkeys[actionName].ToDisplayString();
+                if (conflictAction != null)
+                {
+                    HotkeyStatusText.Text = $"✓ Bound to '{display}'. Cleared conflicting key from '{GetActionTitle(conflictAction)}'.";
+                }
+                else
+                {
+                    HotkeyStatusText.Text = $"✓ '{GetActionTitle(actionName)}' updated to '{display}'.";
+                }
+                HotkeyStatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xFF, 0x88));
+            }
+
+            SettingsService.CurrentInstance.Save();
+        }
+
+        private void ResetHotkeys_Click(object sender, RoutedEventArgs e)
+        {
+            if (_recordingAction != null)
+            {
+                CancelHotkeyRecording();
+            }
+
+            _currentSettings.Hotkeys = AppSettings.GetDefaultHotkeys();
+            UpdateHotkeyUI();
+            SettingsService.CurrentInstance.Save();
+
+            if (HotkeyStatusText != null)
+            {
+                HotkeyStatusText.Text = "✓ All hotkeys restored to defaults (F1, F2, F4, Ctrl+Shift+Q).";
+                HotkeyStatusText.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xE5, 0xFF));
+            }
         }
 
         private void UpdatePreviewAndAutoSave()

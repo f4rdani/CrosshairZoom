@@ -1,0 +1,66 @@
+name: Build & Release CrosshairZoom
+
+on:
+  push:
+    branches: [ "main" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Package (Windows x64)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8.0 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore CrosshairZoom.sln
+
+      - name: Build Solution (Release)
+        run: dotnet build CrosshairZoom.sln -c Release --no-restore
+
+      - name: Publish Single-File Executable
+        run: |
+          dotnet publish src/CrosshairZoom/CrosshairZoom.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained false `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -o output/CrosshairZoom-win-x64
+
+      - name: Package Zip Archive
+        shell: pwsh
+        run: |
+          Compress-Archive -Path output/CrosshairZoom-win-x64/* -DestinationPath output/CrosshairZoom-win-x64.zip
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: CrosshairZoom-win-x64
+          path: |
+            output/CrosshairZoom-win-x64.zip
+            output/CrosshairZoom-win-x64/CrosshairZoom.exe
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            output/CrosshairZoom-win-x64.zip
+            output/CrosshairZoom-win-x64/CrosshairZoom.exe
+          draft: false
+          prerelease: false
+          generate_release_notes: true

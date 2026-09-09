@@ -218,6 +218,19 @@ namespace CrosshairZoom
             {
                 _magnifierService.UpdateProfile(_settingsService.Current.Zoom, _settingsService.Current.Crosshair);
             }
+
+            // Dynamically reload hotkeys in HotkeyService
+            _hotkeyService?.RegisterAll(_settingsService.Current);
+
+            // Dynamically update tray icon tooltip
+            if (_trayIconService != null && _settingsService.Current.Hotkeys != null)
+            {
+                var hk = _settingsService.Current.Hotkeys;
+                string chKey = hk.TryGetValue("ToggleCrosshair", out var b1) ? b1.ToDisplayString() : "F1";
+                string zmKey = hk.TryGetValue("ToggleZoom", out var b2) ? b2.ToDisplayString() : "F2";
+                string prKey = hk.TryGetValue("NextCrosshair", out var b3) ? b3.ToDisplayString() : "F4";
+                _trayIconService.UpdateTooltip($"CrosshairZoom ({chKey}: Crosshair, {zmKey}: Zoom 2x, {prKey}: Preset)");
+            }
         }
 
         private void ShowSettings()
