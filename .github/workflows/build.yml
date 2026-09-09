@@ -25,13 +25,19 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore Dependencies
+      - name: Build Project (Release)
         shell: pwsh
-        run: dotnet restore CrosshairZoom.sln --verbosity normal
-
-      - name: Build Solution (Release)
-        shell: pwsh
-        run: dotnet build CrosshairZoom.sln -c Release --no-restore --verbosity normal
+        run: |
+          $buildOutput = dotnet build src/CrosshairZoom/CrosshairZoom.csproj -c Release 2>&1
+          $buildOutput | ForEach-Object { Write-Host $_ }
+          "### 📋 Build Output" >> $env:GITHUB_STEP_SUMMARY
+          "```text" >> $env:GITHUB_STEP_SUMMARY
+          $buildOutput | Out-String >> $env:GITHUB_STEP_SUMMARY
+          "```" >> $env:GITHUB_STEP_SUMMARY
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Build failed with exit code $LASTEXITCODE"
+            exit 1
+          }
 
       - name: Publish Single-File Executable
         shell: pwsh
@@ -42,8 +48,7 @@ jobs:
             --self-contained false `
             -p:PublishSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true `
-            -o output/CrosshairZoom-win-x64 `
-            --verbosity normal
+            -o output/CrosshairZoom-win-x64
 
       - name: Package Zip Archive
         shell: pwsh
