@@ -191,29 +191,29 @@ namespace CrosshairZoom.Windows
 
             e.Handled = true;
 
-            Key key = (e.Key == Key.System) ? e.SystemKey : e.Key;
+            InputKey key = (e.Key == InputKey.System) ? e.SystemKey : e.Key;
 
-            if (key == Key.Escape)
+            if (key == InputKey.Escape)
             {
                 CancelHotkeyRecording();
                 return;
             }
 
             // Ignore pure modifier presses
-            if (key == Key.LeftCtrl || key == Key.RightCtrl ||
-                key == Key.LeftAlt || key == Key.RightAlt ||
-                key == Key.LeftShift || key == Key.RightShift ||
-                key == Key.LWin || key == Key.RWin)
+            if (key == InputKey.LeftCtrl || key == InputKey.RightCtrl ||
+                key == InputKey.LeftAlt || key == InputKey.RightAlt ||
+                key == InputKey.LeftShift || key == InputKey.RightShift ||
+                key == InputKey.LWin || key == InputKey.RWin)
             {
                 return;
             }
 
             int vk = KeyInterop.VirtualKeyFromKey(key);
             int modifiers = 0;
-            if (Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt)) modifiers |= 1;
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) modifiers |= 2;
-            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)) modifiers |= 4;
-            if (Keyboard.IsKeyDown(Key.LWin) || Keyboard.IsKeyDown(Key.RWin)) modifiers |= 8;
+            if (Keyboard.IsKeyDown(InputKey.LeftAlt) || Keyboard.IsKeyDown(InputKey.RightAlt)) modifiers |= 1;
+            if (Keyboard.IsKeyDown(InputKey.LeftCtrl) || Keyboard.IsKeyDown(InputKey.RightCtrl)) modifiers |= 2;
+            if (Keyboard.IsKeyDown(InputKey.LeftShift) || Keyboard.IsKeyDown(InputKey.RightShift)) modifiers |= 4;
+            if (Keyboard.IsKeyDown(InputKey.LWin) || Keyboard.IsKeyDown(InputKey.RWin)) modifiers |= 8;
 
             _currentSettings.EnsureDefaultHotkeys();
 

@@ -26,12 +26,15 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore Dependencies
-        run: dotnet restore CrosshairZoom.sln
+        shell: pwsh
+        run: dotnet restore CrosshairZoom.sln --verbosity normal
 
       - name: Build Solution (Release)
-        run: dotnet build CrosshairZoom.sln -c Release --no-restore
+        shell: pwsh
+        run: dotnet build CrosshairZoom.sln -c Release --no-restore --verbosity normal
 
       - name: Publish Single-File Executable
+        shell: pwsh
         run: |
           dotnet publish src/CrosshairZoom/CrosshairZoom.csproj `
             -c Release `
@@ -39,7 +42,8 @@ jobs:
             --self-contained false `
             -p:PublishSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true `
-            -o output/CrosshairZoom-win-x64
+            -o output/CrosshairZoom-win-x64 `
+            --verbosity normal
 
       - name: Package Zip Archive
         shell: pwsh
